@@ -2,27 +2,33 @@ const mongoose = require("mongoose");
 
 const journalEntrySchema = new mongoose.Schema(
     {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId, // recommended
-        ref: "User",
-        required: true,
-        index: true,
-    },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            index: true,
+        },
 
-    title: { type: String, default: "" },
-    scriptureRef: { type: String, default: "" },
+        title: String,
+        scriptureRef: String,
 
-    content: {
-        question: { type: String, default: "" },
-        observation: { type: String, default: "" },
-        application: { type: String, default: "" },
-        prayer: { type: String, default: "" },
-    },
+        content: {
+            question: { type: String, default: "" },
+            observation: { type: String, default: "" },
+            application: { type: String, default: "" },
+            prayer: { type: String, default: "" },
+        },
 
-    tags: [{ type: String }],
+        version: {
+            type: Number,
+            default: 1,
+            index: true,
+        },
 
-    deleted: { type: Boolean, default: false }, // soft delete
-    deletedAt: { type: Date, default: null },   // recycle bin support
+        deleted: {
+            type: Boolean,
+            default: false,
+            index: true,
+        },
     },
     { timestamps: true }
 );
