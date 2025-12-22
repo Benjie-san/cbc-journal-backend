@@ -9,6 +9,7 @@ const { connectDB } = require("./db");
 const meRoutes = require("./routes/me");
 const journalRoutes = require("./routes/journals");
 const authRoutes = require("./routes/auth");
+const readingPlanRoutes = require("./routes/readingPlan");
 const authMiddleware = require("./middleware/auth");
 const app = express();
 
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 app.use("/me", meRoutes);
 app.use("/journals", journalRoutes);
 app.use("/auth", authRoutes);
+app.use("/reading-plan", readingPlanRoutes);
 
 
 //PORT

@@ -75,7 +75,7 @@ router.get("/:id", async (req, res) => {
 //UPDATE WITH VERSIONING AND CONFLICT DETECTION
 router.put("/:id", async (req, res) => {
    try {
-      const { content, title, scriptureRef, baseVersion } = req.body;
+      const { content, title, scriptureRef, tags, baseVersion } = req.body;
 
    if (baseVersion === undefined) {
       return res.status(400).json({
@@ -110,6 +110,7 @@ router.put("/:id", async (req, res) => {
          title: journal.title,
          scriptureRef: journal.scriptureRef,
          content: journal.content,
+         tags: journal.tags,
       },
    });
 
@@ -117,6 +118,9 @@ router.put("/:id", async (req, res) => {
    journal.title = title ?? journal.title;
    journal.scriptureRef = scriptureRef ?? journal.scriptureRef;
    journal.content = content ?? journal.content;
+   if (tags !== undefined) {
+      journal.tags = tags;
+   }
    journal.version += 1;
 
    await journal.save();

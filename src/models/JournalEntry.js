@@ -10,6 +10,10 @@ const journalEntrySchema = new mongoose.Schema(
 
         title: String,
         scriptureRef: String,
+        tags: {
+            type: [String],
+            default: [],
+        },
 
         content: {
             question: { type: String, default: "" },
