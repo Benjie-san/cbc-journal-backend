@@ -6,6 +6,9 @@ const userSchema = new mongoose.Schema(
         firebaseUid: { type: String, required: true, unique: true },
         email: { type: String },
         phoneNumber: { type: String },
+        currentStreak: { type: Number, default: 0 },
+        longestStreak: { type: Number, default: 0 },
+        lastJournalDate: { type: String, default: null },
     },
     { timestamps: true }
 );

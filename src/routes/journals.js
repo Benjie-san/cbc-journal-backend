@@ -59,18 +59,62 @@ router.get("/:id", async (req, res) => {
 });
 
 /**
- * UPDATE
+ * GET VERSION HISTORY
  */
-// router.put("/:id", async (req, res) => {
-//     const updated = await JournalEntry.findOneAndUpdate(
-//         { _id: req.params.id, userId: req.user.userId },
-//         req.body,
-//         { new: true }
-//     );
+router.get("/:id/versions", async (req, res) => {
+   const entry = await JournalEntry.findOne({
+      _id: req.params.id,
+      userId: req.user.userId,
+   });
 
-//     if (!updated) return res.status(404).json({ error: "Not found" });
-//     res.json(updated);
-// });
+   if (!entry) return res.status(404).json({ error: "Not found" });
+
+   const versions = await JournalVersion.find({
+      journalId: entry._id,
+   }).sort({ version: -1, createdAt: -1 });
+
+   res.json(versions);
+});
+
+/**
+ * HARD RESTORE VERSION (no new snapshot)
+ */
+router.post("/:id/versions/:version/restore", async (req, res) => {
+   const entry = await JournalEntry.findOne({
+      _id: req.params.id,
+      userId: req.user.userId,
+   });
+
+   if (!entry) return res.status(404).json({ error: "Not found" });
+
+   const versionNumber = Number(req.params.version);
+   if (!Number.isFinite(versionNumber)) {
+      return res.status(400).json({ error: "Invalid version" });
+   }
+
+   const snapshot = await JournalVersion.findOne({
+      journalId: entry._id,
+      version: versionNumber,
+   });
+
+   if (!snapshot) return res.status(404).json({ error: "Version not found" });
+
+   entry.title = snapshot.snapshot?.title ?? "";
+   entry.scriptureRef = snapshot.snapshot?.scriptureRef ?? "";
+   entry.content = snapshot.snapshot?.content ?? {
+      question: "",
+      observation: "",
+      application: "",
+      prayer: "",
+   };
+   entry.tags = snapshot.snapshot?.tags ?? [];
+   entry.version = versionNumber;
+
+   await entry.save();
+
+   res.json(entry);
+});
+
 
 //UPDATE WITH VERSIONING AND CONFLICT DETECTION
 router.put("/:id", async (req, res) => {
@@ -98,7 +142,14 @@ router.put("/:id", async (req, res) => {
       return res.status(409).json({
          error: "VERSION_CONFLICT",
          serverVersion: journal.version,
-         serverContent: journal.content,
+         serverEntry: {
+            title: journal.title,
+            scriptureRef: journal.scriptureRef,
+            content: journal.content,
+            tags: journal.tags,
+            updatedAt: journal.updatedAt,
+            createdAt: journal.createdAt,
+         },
       });
    }
 
