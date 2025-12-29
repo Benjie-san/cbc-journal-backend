@@ -11,9 +11,11 @@ const journalRoutes = require("./routes/journals");
 const authRoutes = require("./routes/auth");
 const readingPlanRoutes = require("./routes/readingPlan");
 const authMiddleware = require("./middleware/auth");
+const { apiLimiter, authLimiter } = require("./middleware/rateLimit");
 const app = express();
 
 // REQUIRED MIDDLEWARE
+app.set("trust proxy", 1);
 app.use(helmet());
 app.use(cors()); // For dev, allow all – later you can restrict to your app domain
 app.use(express.json());
@@ -26,10 +28,10 @@ app.get("/", (req, res) => {
 });
 
 // Routes
-app.use("/me", meRoutes);
-app.use("/journals", journalRoutes);
-app.use("/auth", authRoutes);
-app.use("/reading-plan", readingPlanRoutes);
+app.use("/me", apiLimiter, meRoutes);
+app.use("/journals", apiLimiter, journalRoutes);
+app.use("/auth", authLimiter, authRoutes);
+app.use("/reading-plan", apiLimiter, readingPlanRoutes);
 
 
 //PORT
