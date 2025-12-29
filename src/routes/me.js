@@ -1,24 +1,14 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
+const jwtAuth = require("../middleware/jwtAuth");
 const User = require("../models/User");
 
 const router = express.Router();
 
+router.use(jwtAuth);
+
 router.get("/", async (req, res) => {
     try {
-        const header = req.headers.authorization || "";
-        const [type, token] = header.split(" ");
-
-        console.log("ME ROUTE HEADER:", header);
-
-        if (type !== "Bearer" || !token) {
-            return res.status(401).json({ error: "Missing token" });
-        }
-
-        // Verify BACKEND token (NOT Firebase token)
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        const user = await User.findById(decoded.userId);
+        const user = await User.findById(req.user.userId);
         console.log("AUTH HEADER:", req.headers.authorization);
 
         if (!user) {
@@ -43,15 +33,7 @@ router.get("/", async (req, res) => {
 
 router.post("/streak", async (req, res) => {
     try {
-        const header = req.headers.authorization || "";
-        const [type, token] = header.split(" ");
-
-        if (type !== "Bearer" || !token) {
-            return res.status(401).json({ error: "Missing token" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.userId);
+        const user = await User.findById(req.user.userId);
 
         if (!user) {
             return res.status(404).json({ error: "User not found" });

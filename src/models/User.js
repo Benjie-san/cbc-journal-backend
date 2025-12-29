@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
         currentStreak: { type: Number, default: 0 },
         longestStreak: { type: Number, default: 0 },
         lastJournalDate: { type: String, default: null },
+        tokenVersion: { type: Number, default: 0 },
     },
     { timestamps: true }
 );
