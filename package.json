@@ -8,7 +8,8 @@
     "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed:plan": "node scripts/seedReadingPlan.js",
-    "db:indexes": "node scripts/ensureIndexes.js"
+    "db:indexes": "node scripts/ensureIndexes.js",
+    "db:dedupe-versions": "node scripts/dedupeJournalVersions.js"
   },
   "keywords": [],
   "author": "",

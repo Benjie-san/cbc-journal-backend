@@ -18,16 +18,28 @@ router.post("/", async (req, res) => {
         const decoded = await admin.auth().verifyIdToken(idToken, true);
 
         // 2️⃣ Sync user to MongoDB
-        let user = await User.findOne({ firebaseUid: decoded.uid });
-
-        if (!user) {
-        user = await User.create({
-            firebaseUid: decoded.uid,
-            email: decoded.email || null,
-            phoneNumber: decoded.phone_number || null,
-            provider: decoded.firebase.sign_in_provider,
-            role: "user",
-        });
+        let user;
+        try {
+        user = await User.findOneAndUpdate(
+            { firebaseUid: decoded.uid },
+            {
+            $setOnInsert: {
+                firebaseUid: decoded.uid,
+                role: "user",
+            },
+            $set: {
+                email: decoded.email || null,
+                phoneNumber: decoded.phone_number || null,
+            },
+            },
+            { new: true, upsert: true }
+        );
+        } catch (err) {
+        if (err?.code === 11000) {
+            user = await User.findOne({ firebaseUid: decoded.uid });
+        } else {
+            throw err;
+        }
         }
 
         // 3️⃣ Issue backend JWT (optional but recommended)
