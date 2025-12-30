@@ -10,14 +10,16 @@ const meRoutes = require("./routes/me");
 const journalRoutes = require("./routes/journals");
 const authRoutes = require("./routes/auth");
 const readingPlanRoutes = require("./routes/readingPlan");
-const authMiddleware = require("./middleware/auth");
 const { apiLimiter, authLimiter } = require("./middleware/rateLimit");
 const app = express();
 
 // REQUIRED MIDDLEWARE
 app.set("trust proxy", 1);
 app.use(helmet());
-app.use(cors()); // For dev, allow all – later you can restrict to your app domain
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+  : null;
+app.use(cors(corsOrigins ? { origin: corsOrigins, credentials: true } : undefined));
 app.use(express.json());
 app.use(morgan("dev"));
 
@@ -42,3 +44,4 @@ connectDB().then(() => {
         console.log(`🚀 API running at http://localhost:${PORT}`);
     });
 });
+

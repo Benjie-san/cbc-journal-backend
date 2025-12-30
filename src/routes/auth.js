@@ -40,10 +40,6 @@ router.post("/", async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
-        console.log("JWT GENERATED:", backendToken);
-        console.log("BACKEND JWT SECRET:", process.env.JWT_SECRET);
-
-
         res.json({
         token: backendToken,
         user: {
