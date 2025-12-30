@@ -13,5 +13,6 @@ const readingPlanDaySchema = new mongoose.Schema(
 );
 
 readingPlanDaySchema.index({ year: 1, month: 1, date: 1 }, { unique: true });
+readingPlanDaySchema.index({ year: 1, month: 1, order: 1 });
 
 module.exports = mongoose.model("ReadingPlanDay", readingPlanDaySchema);

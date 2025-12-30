@@ -23,4 +23,7 @@ const journalVersionSchema = new mongoose.Schema({
     },
 });
 
+journalVersionSchema.index({ journalId: 1, version: 1 }, { unique: true });
+journalVersionSchema.index({ journalId: 1, createdAt: -1 });
+
 module.exports = mongoose.model("JournalVersion", journalVersionSchema);

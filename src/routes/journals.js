@@ -10,12 +10,24 @@ router.use(jwtAuth);
  * CREATE
  */
 router.post("/", async (req, res) => {
+   const clientId = req.body.clientId || null;
+   if (clientId) {
+      const existing = await JournalEntry.findOne({
+         userId: req.user.userId,
+         clientId,
+      });
+      if (existing) {
+         return res.json(existing);
+      }
+   }
+
    const entry = await JournalEntry.create({
       userId: req.user.userId,
       title: req.body.title,
       scriptureRef: req.body.scriptureRef,
       content: req.body.content,
       tags: req.body.tags || [],
+      clientId,
    });
 
    res.json(entry);
