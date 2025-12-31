@@ -165,17 +165,32 @@ router.put("/:id", async (req, res) => {
       });
    }
 
-   // 🧠 Save snapshot BEFORE modifying
-   await JournalVersion.create({
-      journalId: journal._id,
-      version: journal.version,
-      snapshot: {
-         title: journal.title,
-         scriptureRef: journal.scriptureRef,
-         content: journal.content,
-         tags: journal.tags,
+   // Save snapshot BEFORE modifying
+   await JournalVersion.updateOne(
+      { journalId: journal._id, version: journal.version },
+      {
+         $setOnInsert: {
+            journalId: journal._id,
+            version: journal.version,
+            snapshot: {
+               title: journal.title,
+               scriptureRef: journal.scriptureRef,
+               content: journal.content,
+               tags: journal.tags,
+            },
+         },
       },
-   });
+      { upsert: true }
+   );
+
+   const latestVersion = await JournalVersion.findOne({
+      journalId: journal._id,
+   })
+      .sort({ version: -1 })
+      .select({ version: 1 })
+      .lean();
+
+   const maxVersion = latestVersion?.version ?? journal.version;
 
    // Apply update
    journal.title = title ?? journal.title;
@@ -184,7 +199,7 @@ router.put("/:id", async (req, res) => {
    if (tags !== undefined) {
       journal.tags = tags;
    }
-   journal.version += 1;
+   journal.version = Math.max(journal.version, maxVersion) + 1;
 
    await journal.save();
 
