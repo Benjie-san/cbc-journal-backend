@@ -1,47 +1,22 @@
-// src/index.js
 require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const morgan = require("morgan");
-const { connectDB } = require("./db");
 
-const meRoutes = require("./routes/me");
-const journalRoutes = require("./routes/journals");
-const authRoutes = require("./routes/auth");
-const readingPlanRoutes = require("./routes/readingPlan");
-const { apiLimiter, authLimiter } = require("./middleware/rateLimit");
-const app = express();
+const { createApp } = require("./app");
+const { loadConfig } = require("./config");
+const { startServer } = require("./server");
 
-// REQUIRED MIDDLEWARE
-app.set("trust proxy", 1);
-app.use(helmet());
-const corsOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
-  : null;
-app.use(cors(corsOrigins ? { origin: corsOrigins, credentials: true } : undefined));
-app.use(express.json());
-app.use(morgan("dev"));
+// App construction is intentionally side-effect free: importing this module
+// must not connect to MongoDB, bind a port, or load production credentials.
+const app = createApp();
 
-
-
-app.get("/", (req, res) => {
-    res.json({ status: "ok" });
-});
-
-// Routes
-app.use("/me", apiLimiter, meRoutes);
-app.use("/journals", apiLimiter, journalRoutes);
-app.use("/auth", authLimiter, authRoutes);
-app.use("/reading-plan", apiLimiter, readingPlanRoutes);
-
-
-//PORT
-const PORT = process.env.PORT || 4000;
-console.log(PORT)
-connectDB().then(() => {
-    app.listen(PORT, () => {
-        console.log(`🚀 API running at http://localhost:${PORT}`);
+if (require.main === module) {
+  startServer({ app })
+    .then(({ config }) => {
+      console.log(`[server] API listening on port ${config.port}`);
+    })
+    .catch((error) => {
+      console.error(`[server] startup failed (${error?.name || "Error"})`);
+      process.exitCode = 1;
     });
-});
+}
 
+module.exports = { app, createApp, loadConfig, startServer };

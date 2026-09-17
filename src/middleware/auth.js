@@ -1,10 +1,6 @@
 // src/middleware/auth.js
-const admin = require("../firebaseAdmin");
-
 async function authMiddleware(req, res, next) {
     try {
-        console.log("AUTH HEADER:", req.headers.authorization);
-
         const header = req.headers.authorization || "";
         const [type, token] = header.split(" ");
 
@@ -12,7 +8,7 @@ async function authMiddleware(req, res, next) {
         return res.status(401).json({ error: "Missing or invalid Authorization header" });
         }
 
-        const decoded = await admin.auth().verifyIdToken(token);
+        const decoded = await require("../firebaseAdmin").auth().verifyIdToken(token);
 
         // Attach minimal user info to request
         req.user = {

@@ -9,8 +9,6 @@ router.use(jwtAuth);
 router.get("/", async (req, res) => {
     try {
         const user = await User.findById(req.user.userId);
-        console.log("AUTH HEADER:", req.headers.authorization);
-
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }

@@ -205,7 +205,7 @@ router.put("/:id", async (req, res) => {
 
    res.json(journal);
    } catch (err) {
-      console.error("Update journal error:", err);
+      console.error("Update journal error:", err.message);
       res.status(500).json({ error: "Failed to update journal" });
    }
 });

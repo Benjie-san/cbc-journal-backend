@@ -1,14 +1,25 @@
-// src/db.js
 const mongoose = require("mongoose");
 
-async function connectDB() {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log("✅ Connected to MongoDB Atlas");
-    } catch (err) {
-        console.error("❌ MongoDB connection error:", err.message);
-        process.exit(1);
+async function connectDB({ uri = process.env.MONGODB_URI, client = mongoose } = {}) {
+    if (!uri) {
+        throw new Error("MONGODB_URI is required");
+    }
+    await client.connect(uri);
+    console.log("[server] connected to MongoDB");
+    return client;
+}
+
+async function pingDB({ client = mongoose } = {}) {
+    if (!client.connection?.db) {
+        throw new Error("MongoDB is not connected");
+    }
+    return client.connection.db.admin().ping();
+}
+
+async function closeDB({ client = mongoose } = {}) {
+    if (client.connection?.readyState) {
+        await client.connection.close(false);
     }
 }
 
-module.exports = { connectDB };
+module.exports = { closeDB, connectDB, pingDB };

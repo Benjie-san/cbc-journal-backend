@@ -1,10 +1,10 @@
 const express = require("express");
-const admin = require("../firebaseAdmin");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const jwtAuth = require("../middleware/jwtAuth");
 
 const router = express.Router();
+const getFirebaseAdmin = () => require("../firebaseAdmin");
 
 router.post("/", async (req, res) => {
     try {
@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
         }
 
         // 1️⃣ Verify Firebase token
-        const decoded = await admin.auth().verifyIdToken(idToken, true);
+        const decoded = await getFirebaseAdmin().auth().verifyIdToken(idToken, true);
 
         // 2️⃣ Sync user to MongoDB
         let user;
@@ -75,7 +75,7 @@ router.post("/revoke", jwtAuth, async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        await admin.auth().revokeRefreshTokens(user.firebaseUid);
+        await getFirebaseAdmin().auth().revokeRefreshTokens(user.firebaseUid);
         user.tokenVersion = Number(user.tokenVersion ?? 0) + 1;
         await user.save();
 

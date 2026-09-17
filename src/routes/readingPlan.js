@@ -48,7 +48,7 @@ router.get("/:year/:month", async (req, res) => {
 
     return res.json(response);
   } catch (err) {
-    console.error("Reading plan load error:", err);
+    console.error("Reading plan load error:", err.message);
     return res.status(500).json({ error: "Failed to load reading plan" });
   }
 });
@@ -92,7 +92,7 @@ router.post("/:dayId/complete", async (req, res) => {
 
     return res.json(completion);
   } catch (err) {
-    console.error("Reading plan completion error:", err);
+    console.error("Reading plan completion error:", err.message);
     return res.status(500).json({ error: "Failed to complete reading plan day" });
   }
 });
