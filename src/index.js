@@ -6,10 +6,10 @@ const { startServer } = require("./server");
 
 // App construction is intentionally side-effect free: importing this module
 // must not connect to MongoDB, bind a port, or load production credentials.
-const app = createApp();
+let importedApp;
 
 if (require.main === module) {
-  startServer({ app })
+  startServer()
     .then(({ config }) => {
       console.log(`[server] API listening on port ${config.port}`);
     })
@@ -19,4 +19,12 @@ if (require.main === module) {
     });
 }
 
-module.exports = { app, createApp, loadConfig, startServer };
+module.exports = {
+  get app() {
+    importedApp ||= createApp();
+    return importedApp;
+  },
+  createApp,
+  loadConfig,
+  startServer,
+};

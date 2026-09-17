@@ -1,5 +1,5 @@
 const DEFAULT_PORT = 4000;
-const DEFAULT_JSON_BODY_LIMIT = "1mb";
+const DEFAULT_JSON_BODY_LIMIT = "100kb";
 const DEFAULT_SHUTDOWN_TIMEOUT_MS = 10_000;
 
 function parsePort(value) {
@@ -32,7 +32,7 @@ function parseByteLimit(value) {
     match[2] || "b"
   ];
   const bytes = Number(match[1]) * multiplier;
-  if (!Number.isFinite(bytes) || bytes <= 0) {
+  if (!Number.isFinite(bytes) || bytes < 1 || !Number.isInteger(bytes)) {
     throw new Error("JSON_BODY_LIMIT must be a positive size");
   }
   return bytes;

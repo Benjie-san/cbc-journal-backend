@@ -33,13 +33,14 @@ function logRequestError(req, status, error) {
 
 function createApp(options = {}) {
   const app = express();
-  const config = options.config || loadConfig(options.env || process.env);
+  const env = options.env || process.env;
+  const config = options.config || loadConfig(env);
   const readyCheck = options.readyCheck || pingDB;
 
   app.set("trust proxy", 1);
   app.use(helmet());
-  const corsOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+  const corsOrigins = env.CORS_ORIGIN
+    ? env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
     : null;
   // CORS remains permissive for the native-only deployment phase.
   app.use(cors(corsOrigins ? { origin: corsOrigins, credentials: true } : undefined));
@@ -48,14 +49,17 @@ function createApp(options = {}) {
   app.use(morgan("dev"));
 
   app.get("/", (_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
     res.json({ status: "ok" });
   });
 
   app.get("/health", (_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
     res.json({ status: "ok" });
   });
 
-  app.get("/ready", async (_req, res) => {
+  app.get("/ready", apiLimiter, async (_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
     try {
       await readyCheck();
       return res.json({ status: "ok" });

@@ -43,8 +43,13 @@ async function startServer(options = {}) {
       let exitCode = 0;
       try {
         // Closing the HTTP listener first stops new work from entering the app.
-        await withTimeout(closeHttpServer(server), config.shutdownTimeoutMs);
-        await withTimeout(Promise.resolve(closeDatabase()), config.shutdownTimeoutMs);
+        await withTimeout(
+          (async () => {
+            await closeHttpServer(server);
+            await closeDatabase();
+          })(),
+          config.shutdownTimeoutMs
+        );
       } catch (error) {
         exitCode = 1;
         console.error(`[server] ${signal} shutdown failed (${error?.name || "Error"})`);
@@ -57,7 +62,10 @@ async function startServer(options = {}) {
   if (options.installSignalHandlers !== false) {
     const handleSignal = (signal) => {
       shutdown(signal).then((exitCode) => {
-        process.exitCode = exitCode;
+        process.exit(exitCode);
+      }).catch((error) => {
+        console.error(`[server] ${signal} shutdown failed (${error?.name || "Error"})`);
+        process.exit(1);
       });
     };
     process.once("SIGINT", () => handleSignal("SIGINT"));

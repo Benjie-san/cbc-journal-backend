@@ -124,7 +124,7 @@ Copy `.env.example` to `.env`, then provide real values locally:
 MONGODB_URI=mongodb://127.0.0.1:27017/journal
 JWT_SECRET=<long-random-secret>
 PORT=4000
-JSON_BODY_LIMIT=1mb
+JSON_BODY_LIMIT=100kb
 SHUTDOWN_TIMEOUT_MS=10000
 ```
 
@@ -132,7 +132,7 @@ Generate `JWT_SECRET` with a cryptographically secure password generator. Never 
 
 `MONGODB_URI` and `JWT_SECRET` are required at startup. `PORT` must be an
 integer from 1 through 65535. `JSON_BODY_LIMIT` accepts a positive byte size
-such as `512kb` or `1mb`; the default is `1mb`. `SHUTDOWN_TIMEOUT_MS` bounds
+such as `100kb` or `1mb`; the default is `100kb`. `SHUTDOWN_TIMEOUT_MS` bounds
 graceful shutdown and defaults to 10 seconds. Startup validation reports only
 configuration names, never their values.
 

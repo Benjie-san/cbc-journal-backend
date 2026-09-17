@@ -25,6 +25,7 @@ test("liveness and compatibility health endpoints return JSON", async () => {
     for (const path of ["/", "/health"]) {
       const response = await fetch(`${baseUrl}${path}`);
       assert.equal(response.status, 200);
+      assert.equal(response.headers.get("cache-control"), "no-store");
       assert.deepEqual(await response.json(), { status: "ok" });
     }
   });
@@ -90,6 +91,7 @@ test("readiness reports dependency success and failure without a live database",
   await withServer(readyApp, async (baseUrl) => {
     const response = await fetch(`${baseUrl}/ready`);
     assert.equal(response.status, 200);
+    assert.equal(response.headers.get("cache-control"), "no-store");
     assert.deepEqual(await response.json(), { status: "ok" });
   });
 
@@ -102,6 +104,7 @@ test("readiness reports dependency success and failure without a live database",
   await withServer(notReadyApp, async (baseUrl) => {
     const response = await fetch(`${baseUrl}/ready`);
     assert.equal(response.status, 503);
+    assert.equal(response.headers.get("cache-control"), "no-store");
     assert.deepEqual(await response.json(), { status: "not_ready" });
   });
 });
@@ -127,6 +130,7 @@ test("startup configuration requires secrets and validates numeric settings", ()
   }, { requireSecrets: true });
   assert.equal(config.port, 4100);
   assert.equal(config.jsonBodyLimit, "2mb");
+  assert.equal(loadConfig({}).jsonBodyLimit, "100kb");
 });
 
 test("server startup and shutdown can be exercised with injected dependencies", async () => {
