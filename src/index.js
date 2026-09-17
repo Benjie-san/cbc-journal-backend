@@ -1,4 +1,8 @@
-require("dotenv").config();
+const dotenvOptions = process.env.DOTENV_CONFIG_PATH
+  ? { path: process.env.DOTENV_CONFIG_PATH }
+  : undefined;
+
+require("dotenv").config(dotenvOptions);
 
 const { createApp } = require("./app");
 const { loadConfig } = require("./config");

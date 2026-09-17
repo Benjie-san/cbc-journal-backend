@@ -1,5 +1,15 @@
 // src/firebaseAdmin.js
 const admin = require("firebase-admin");
+const fs = require("node:fs");
+const path = require("node:path");
+
+function readServiceAccountFile(filePath) {
+    try {
+        return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    } catch (err) {
+        throw new Error(`Unable to load Firebase service account from ${filePath}`);
+    }
+}
 
 function loadServiceAccount() {
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -20,7 +30,10 @@ function loadServiceAccount() {
             throw new Error("Invalid FIREBASE_SERVICE_ACCOUNT_BASE64");
         }
     }
-    return require("../firebase-service-account.json");
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+        return readServiceAccountFile(path.resolve(process.env.FIREBASE_SERVICE_ACCOUNT_PATH));
+    }
+    return readServiceAccountFile(path.join(__dirname, "..", "firebase-service-account.json"));
 }
 
 const serviceAccount = loadServiceAccount();

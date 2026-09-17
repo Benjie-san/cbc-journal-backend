@@ -1,12 +1,9 @@
 # CBC Journal Local Git Workflow
 
 This project intentionally uses one backend checkout. `main` is the production
-checkpoint and `dev` is the existing development branch.
-
-Because the Windows startup task executes this directory directly, switching
-branches or editing files also changes what the next backend process will load.
-Git provides checkpoints and rollback, but a branch alone does not isolate a
-running production process.
+checkpoint and `dev` is the existing development branch. Production runs an
+exported release under `C:\ProgramData\CBCJournal`, so switching the source
+checkout no longer changes the running application.
 
 ## Branch roles
 
@@ -18,24 +15,18 @@ or deployment unless that is separately intended and reviewed.
 
 ## Start a development window
 
-1. Confirm a maintenance window. The API will remain unavailable while the
-   single checkout is on `dev`.
-2. Stop the `Journal Backend` scheduled task and confirm no backend Node process
-   or listener remains on port 4000.
-3. Require a clean production checkpoint:
+Require a clean production checkpoint, then switch to `dev`:
 
    ```powershell
    git switch main
    git status --short
    ```
 
-4. Switch to the development branch:
+```powershell
+git switch dev
+```
 
-   ```powershell
-   git switch dev
-   ```
-
-Do not start the production task while the checkout is on `dev`.
+The deployed release remains available while development is in progress.
 
 ## Develop and commit locally
 
@@ -68,29 +59,29 @@ git diff main...dev
 
 After tests and review pass:
 
-1. Keep the backend task stopped.
-2. Switch to `main` and fast-forward it to the reviewed `dev` commit:
+1. Switch to `main` and fast-forward it to the reviewed `dev` commit:
 
    ```powershell
    git switch main
    git merge --ff-only dev
    ```
 
-3. Confirm `git status --short` is empty.
-4. Start the backend task.
-5. Verify local `/health`, local `/ready`, public `/health`, authentication, and
-   one phone synchronization.
-6. Record the deployed commit and smoke-test result.
+2. Confirm `git status --short` is empty.
+3. Run `cbcjournal-deploy` from an elevated terminal. The command tests and
+   exports the exact committed state; it never deploys worktree-only files.
+4. Verify authentication and one phone synchronization in addition to the
+   automated health checks.
+5. Record the deployed commit and smoke-test result.
 
 Do not deploy an uncommitted worktree. Do not use `git reset --hard` or a forced
 push for a normal deployment.
 
 ## Rollback
 
-If the deployed commit fails its smoke test, keep the task stopped, create a
-normal revert commit on `main`, restart the task, and repeat the health,
-authentication, and synchronization checks. A revert preserves an auditable
-record of both the failed deployment and rollback.
+Activation failures automatically restore the previous release pointer. If a
+problem appears during later smoke testing, select the retained prior release
+and restart the task, then create a normal revert commit on `main`. See
+[deployment.md](./deployment.md) for the runtime layout.
 
 Database migrations and credential changes require their own backup and rollback
 steps; reverting source code alone may not reverse them safely.

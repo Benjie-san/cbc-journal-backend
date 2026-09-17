@@ -69,8 +69,10 @@ The original migration goal is complete:
 - Removed the misplaced Firebase client `google-services.json` from the backend repository.
 - Added `scripts/backupMongo.ps1` for compressed, checksummed local backups.
 - Registered and successfully tested the daily `Journal MongoDB Backup` Windows task.
-- Added `scripts/runBackend.ps1` and `scripts/installBackendStartupTask.ps1`.
-- Registered the `Journal Backend` SYSTEM task to start Node at Windows startup.
+- Added a release-based deployment workflow documented in
+  [deployment.md](./deployment.md).
+- Registered the `Journal Backend` SYSTEM task to start the selected immutable
+  release from `C:\ProgramData\CBCJournal`, separate from the source checkout.
 - Hardened the runner after an unexpected Node exit: it now supervises Node, retries after 10 seconds, and is allowed to continue on battery power. Task Scheduler restart settings provide a second recovery layer.
 
 The following files must remain uncommitted:
@@ -166,12 +168,12 @@ Get-ScheduledTaskInfo -TaskName "Journal Backend"
 Get-Content "C:\ProgramData\CBCJournal\logs\backend-$(Get-Date -Format yyyy-MM-dd).log" -Tail 30
 ```
 
-For a manual fallback, stop the task and run:
+For a manual diagnostic fallback, stop the task and run the selected release
+with the production configuration variables set. Do not start production from
+the mutable source checkout. Normal releases use:
 
 ```powershell
-Stop-ScheduledTask -TaskName "Journal Backend"
-Set-Location C:\Users\zerep\OneDrive\Desktop\PROJECTS\journal-backend
-npm start
+cbcjournal-deploy
 ```
 
 Verify in a browser at `http://localhost:4000/`.
