@@ -1,3 +1,11 @@
 node_modules
 .env
+.env.*
+!.env.example
 firebase-service-account.json
+google-services.json
+cert.pem
+*.key
+*.pem
+*.archive.gz
+*.archive.gz.age
